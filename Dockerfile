@@ -1,7 +1,7 @@
 # image to test x509 auth
 # database: admin
 # username: C=US,ST=CA,L=San Francisco,O=Jaspersoft,OU=JSDev,CN=admin
-FROM mongo:3.2
+FROM mongo:5.0.2
 
 # designate a new data directory (the original one is volumized, no data is persisted)
 ENV MONGO_DBPATH /data/test-db
