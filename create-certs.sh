@@ -43,6 +43,27 @@ CLIENT_CSR=mongodb-client.csr
 # Client PKCS12 type store with client private key and certificate in it
 CLIENT_P12=mongodb-client.p12
 
+# Check if the key files exist
+if [ -f $CA_PEM ]; then
+    echo "$CA_PEM already exists, removing..."
+    rm -f $CA_PEM
+fi
+
+if [ -f $CLIENT_PEM ]; then
+    echo "$CLIENT_PEM already exists, removing..."
+    rm -f $CLIENT_PEM
+fi
+
+if [ -f $SRV_PEM ]; then
+    echo "$SRV_PEM already exists, removing..."
+    rm -f $SRV_PEM
+fi
+
+if [ -f $CLIENT_JKS ]; then
+    echo "$CLIENT_JKS already exists, removing..."
+    rm -f $CLIENT_JKS
+fi
+
 # common subj part
 SUBJ_PART='/OU=JSDev/O=Jaspersoft/L=San Francisco/ST=CA/C=US'
 # Certification Authority certificate subj
@@ -103,16 +124,17 @@ rm $CLIENT_CSR
 # Now for the java client we need to create trust-store.jks with CA.crt in it and key-store.jks with client.key and client.crt in it.
 
 log "Creating jks store"
+read -s -p "Input keystore password: " KEYSTORE_PASS
 # remove JKS store from previous run
 rm -f $CLIENT_JKS
 # Create intermediate PKCS12 type store with client cert and key (I couldn't find another way to import client cert and key into JKS store).
-openssl pkcs12 -export -in $CLIENT_CRT -inkey $CLIENT_KEY -chain -CAfile $CA_PEM -out $CLIENT_P12 -password pass:123456
+openssl pkcs12 -export -in $CLIENT_CRT -inkey $CLIENT_KEY -chain -CAfile $CA_PEM -out $CLIENT_P12 -password pass:$KEYSTORE_PASS
 # create JKS type key store with client cert and key
-keytool -importkeystore -deststorepass '123456' -srcstorepass '123456' -destkeystore $CLIENT_JKS -srckeystore $CLIENT_P12 -srcstoretype PKCS12
+keytool -importkeystore -deststorepass $KEYSTORE_PASS -srcstorepass $KEYSTORE_PASS -destkeystore $CLIENT_JKS -srckeystore $CLIENT_P12 -srcstoretype PKCS12
 # Won't need the .p12 file anymore.
 rm $CLIENT_P12
 # Create JKS type trust store with CA cert in it.
-keytool -importcert -trustcacerts -noprompt -file $CA_CRT -keystore $CLIENT_JKS -storepass '123456'
+keytool -importcert -trustcacerts -noprompt -file $CA_CRT -keystore $CLIENT_JKS -storepass $KEYSTORE_PASS
 # Won't need these eighter.
 rm $CA_KEY $CA_CRT $SRV_KEY $SRV_CRT $CLIENT_KEY $CLIENT_CRT $CA_SRL
 

@@ -17,4 +17,4 @@ COPY mongodb-server.pem /etc/ssl/
 COPY mongodb-client.pem /etc/ssl/
 COPY mongodb-client.jks /etc/ssl/
 
-CMD ["mongod", "--dbpath=/data/test-db", "--sslMode", "requireSSL", "--sslPEMKeyFile", "/etc/ssl/mongodb-server.pem", "--sslCAFile", "/etc/ssl/mongodb-CA.pem", "--auth", "--clusterAuthMode", "x509"]
+CMD ["mongod", "--dbpath=/data/test-db", "--sslMode", "requireSSL", "--sslPEMKeyFile", "/etc/ssl/mongodb-server.pem", "--sslCAFile", "/etc/ssl/mongodb-CA.pem"]
