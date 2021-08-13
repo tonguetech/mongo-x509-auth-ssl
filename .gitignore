@@ -2,3 +2,6 @@
 .*.sw*
 *.pem
 *.jks
+*.crt
+*.key
+*.srl

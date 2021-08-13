@@ -84,7 +84,7 @@ log "Generating CA certs"
 # We'll use this root certificate to signt server and client certificates.
 #
 # This cone command creates private key and self-signed x509 certificate
-openssl req -newkey rsa:2048 -new -x509 -extensions v3_ca -days 9999 -nodes -out $CA_CRT -keyout $CA_KEY -subj "$CA_SUBJ"
+openssl req -newkey rsa:4096 -new -x509 -extensions v3_ca -days 9999 -nodes -out $CA_CRT -keyout $CA_KEY -subj "$CA_SUBJ"
 # Concatenate the private key and the certificate into a pem file which will be used by mongod and mongo.
 cat $CA_KEY $CA_CRT > $CA_PEM
 
@@ -94,11 +94,11 @@ cat $CA_KEY $CA_CRT > $CA_PEM
 
 log "Generating server certs"
 # Create server private key and CSR (certificate signing request).
-openssl req -new -nodes -newkey rsa:2048 -keyout $SRV_KEY -out $SRV_CSR -subj "$SRV_SUBJ"
+openssl req -new -nodes -newkey rsa:4096 -keyout $SRV_KEY -out $SRV_CSR -subj "$SRV_SUBJ"
 # Now we have server private key (.key) and server certificate signing request (.csr).
 # Use CA.key and CA.crt to sign  the server .csr file. This command will also generate a serial file (.srl)
 # This is a file with a random number which is incremented each time CA.crt is used to sign something.
-openssl x509 -CA $CA_CRT -CAkey $CA_KEY -CAcreateserial -req -days 9999 -in $SRV_CSR -out $SRV_CRT
+openssl x509 -sha256 -req -days 365 -CA $CA_CRT -CAkey $CA_KEY -CAcreateserial -in $SRV_CSR -out $SRV_CRT
 # Concatentate the server private key and certificate into a pem file which will be used by mongod.
 cat $SRV_KEY $SRV_CRT > $SRV_PEM
 # Remove server .csr file, we won't need it anymore.
@@ -108,8 +108,8 @@ rm $SRV_CSR
 
 log "Generating client certs"
 # Now generate client files the same way.
-openssl req -new -nodes -newkey rsa:2048 -keyout $CLIENT_KEY -out $CLIENT_CSR -subj "$CLIENT_SUBJ"
-openssl x509 -CA $CA_CRT -CAkey $CA_KEY -CAcreateserial -req -days 9999 -in $CLIENT_CSR -out $CLIENT_CRT
+openssl req -new -nodes -newkey rsa:4096 -keyout $CLIENT_KEY -out $CLIENT_CSR -subj "$CLIENT_SUBJ"
+openssl x509 -sha256 -req -days 365 -CA $CA_CRT -CAkey $CA_KEY -CAcreateserial -in $CLIENT_CSR -out $CLIENT_CRT
 # Create pem file to be used by mongo.
 cat $CLIENT_KEY $CLIENT_CRT > $CLIENT_PEM
 rm $CLIENT_CSR
